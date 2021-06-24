@@ -6,6 +6,7 @@ import shutil
 def setup_config_file():
     """
     Tests to ensure config file exists. If not, copies example file over
+    Documentation:
     :return:
     """
     # Test if file exists
