@@ -1,0 +1,28 @@
+{
+  "Config": [
+    {
+      "LoggingSettings": [
+        {
+          "FileLogging": [
+            {
+              "FileLogging": "True",
+              "FileLogLocation": "",
+              "FileLogLevel": "Debug"
+            }
+          ],
+          "StreamLogging": [
+            {
+              "StreamLogging": "True",
+              "LogStream": "Console",
+              "StreamLogLevel": "Warning"
+            }
+          ]
+        }
+      ],
+      "ParentProjectName": "",
+      "ParentServiceAccount": "",
+      "Authentication": [],
+      "BillingAccountId": ""
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/gcp_project_automation.iml" filepath="$PROJECT_DIR$/.idea/gcp_project_automation.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/gcpprojectautomation.iml" filepath="$PROJECT_DIR$/.idea/gcpprojectautomation.iml" />
     </modules>
   </component>
 </project>
