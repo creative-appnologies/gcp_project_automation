@@ -7,7 +7,7 @@ def setup_config_file():
     """
     Tests to ensure config file exists. If not, copies example file over
     Documentation:
-    :return:
+    :return: True or False
     """
     # Test if file exists
     if os.path.exists(os.getenv("GCP_AUTOMATION_CONFIG")):
@@ -130,20 +130,63 @@ def set_config_file():
             user_input = input("Parent Project Id does not exist. Please input: ")
             config['Config'][0]['ParentProjectId'] = user_input
 
-        if 'ParentServiceAccount' not in config['Config'][0] \
-                or config['Config'][0]['ParentServiceAccount'] is None \
-                or config['Config'][0]['ParentServiceAccount'] == "":
-            user_input = input("Parent Service Account does not exist. Please input: ")
-            config['Config'][0]['ParentServiceAccount'] = user_input
-
         if 'Authentication' not in config['Config'][0] or config['Config'][0]['Authentication'] is None \
                 or config['Config'][0]['Authentication'] == []:
-            print("Update authentication")
+            auth_file = False
+            while auth_file is not True:
+                auth_loc = input("Path to Authentication settings required: ")
+                # Check the file path
+                if os.path.exists(auth_loc):
+                    config['Config'][0]['Authentication'] = auth_loc
+                    auth_file = True
+                else:
+                    print("Path provided for Authentication does not exist. Update and try again")
+        else:
+            auth_file = False
+            auth_loc = config['Config'][0]['Authentication']
+            while auth_file is not True:
+                if os.path.exists(auth_loc):
+                    config['Config'][0]['Authentication'] = auth_loc
+                    auth_file = True
+                else:
+                    print("Specified authorisation file does not exist. Update and try again")
+                    auth_loc = input("Specify authorisation file path: ")
 
         if 'BillingAccountId' not in config['Config'][0] or config['Config'][0]['BillingAccountId'] is None \
                 or config['Config'][0]['BillingAccountId'] == "":
             user_input = input("Billing Account Id does not exist. Please input: ")
             config['Config'][0]['BillingAccountId'] = user_input
+
+        if 'ManifestSettings' not in config['Config'][0] or config['Config'][0]['ManifestSettings'] is None \
+            or config['Config'][0]['ManifestSettings'] == "":
+            # Confirm if the user wishes to use default
+            user_input = input("No Manifest Settings detected. Use default? (Y/N)")
+            if user_input == "Y":
+                config['Config'][0]['ManifestSettings']['LocalManifestLocation'] = "./bin/manifests"
+                config['Config'][0]['ManifestSettings']['AutoQueryRemoteManifest'] = "RemoteFirst"
+                config['Config'][0]['ManifestSettings']['RemoteManifestLocation'] = "URL" #todo: update this to be accurate
+                config['Config'][0]['ManifestSettings']['RemoteManifestAuthentication'] = "" #todo: Update this to be accurate
+            else:
+                # Set the Local Manifest Location
+                config['Config'][0]['ManifestSettings']['LocalManifestLocation'] = input("Local Manifest Location: ")
+                # Set the AutoQueryRemoteManifestLocation
+                manifest_setting = input("Select AutoQueryRemoteManifest setting to be either: (RO) RemoteOnly, (LO) "
+                                          "LocalOnly, (RF) RemoteFirst or (LF) LocalFirst: ")
+                if manifest_setting == "RO":
+                    config['Config'][0]['ManifestSettings']['AutoQueryRemoteManifest'] = "RemoteOnly"
+                elif manifest_setting == "LO":
+                    config['Config'][0]['ManifestSettings']['AutoQueryRemoteManifest'] = "LocalOnly"
+                elif manifest_setting == "RF":
+                    config['Config'][0]['ManifestSettings']['AutoQueryRemoteManifest'] = "RemoteFirst"
+                elif manifest_setting == "LF":
+                    config['Config'][0]['ManifestSettings']['AutoQueryRemoteManifest'] = "LocalFirst"
+                else:
+                    config['Config'][0]['ManifestSettings']['AutoQueryRemoteManifest'] = "RemoteFirst"
+
+                # Set the remote query API
+                config['Config'][0]['ManifestSettings']['RemoteManifestLocation'] = input("Insert remote query API: ")
+                config['Config'][0]['ManifestSettings'][
+                    'RemoteManifestAuthentication'] = ""  # todo: Update this to be accurate
 
         # Turn the data back into json and write back to config file
         with open(config_file, "w") as file:

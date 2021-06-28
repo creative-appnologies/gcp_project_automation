@@ -1,9 +1,7 @@
-import logging
 import os
-import sys
-import json
 from gcpprojectautomation import config_setup
 from gcpprojectautomation import logging_setup
+from gcpprojectautomation import projects
 
 # Get the Config file location
 if os.getenv("GCP_AUTOMATION_CONFIG") is None:

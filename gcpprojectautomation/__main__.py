@@ -1,7 +1,4 @@
-import config_setup
-import logging
-import os
-
+from gcpprojectautomation import projects
 
 # Main function
 def main():
@@ -9,7 +6,7 @@ def main():
 
     :return:
     """
-
+    print("Hello my package")
 
 
 if __name__=="__main__":

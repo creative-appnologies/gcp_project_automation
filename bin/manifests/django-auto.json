@@ -1,0 +1,54 @@
+{
+  "ManifestName": "django-auto",
+  "ContainerID": "",
+  "ManifestDetails": [
+    {
+      "APIList": [
+        {
+          "API_Title": "Cloud Run",
+          "API_Name": "run"
+        },
+        {
+          "API_Title": "Cloud SQL",
+          "API_Name": "sql-component"
+        },
+        {
+          "API_Title": "Cloud SQL Admin",
+          "API_Name": "sqladmin"
+        },
+        {
+          "API_Title": "Cloud Build",
+          "API_Name": "cloudbuild"
+        },
+        {
+          "API_Title": "Secret Manager",
+          "API_Name": "secretmanager"
+        },
+        {
+          "API_Title": "Compute Engine API",
+          "API_Name": "compute"
+        },
+        {
+          "API_Title": "Cloud Storage",
+          "API_Name": "storage-component"
+        },
+        {
+          "API_Title": "Cloud Storage Admin",
+          "API_Name": "storage"
+        },
+        {
+          "API_Title": "Google Cloud APIs",
+          "API_Name": "cloudapis"
+        },
+        {
+          "API_Title": "Container Registry API",
+          "API_Name": "containerregistry"
+        },
+        {
+          "API_Title": "Artifact Registry API",
+          "API_Name": "artifactregistry"
+        }
+      ]
+    }
+  ]
+}

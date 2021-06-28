@@ -20,9 +20,17 @@
         }
       ],
       "ParentProjectName": "",
-      "ParentServiceAccount": "",
-      "Authentication": [],
-      "BillingAccountId": ""
+      "ParentProjectId": "",
+      "Authentication": "./bin/service-account-keys.json",
+      "BillingAccountId": "",
+      "ManifestSettings": [
+        {
+          "LocalManifestLocation": "./bin/manifests",
+          "RemoteManifestAuthentication": "",
+          "AutoQueryRemoteManifest": "LocalFirst",
+          "RemoteManifestLocation": "URL"
+        }
+      ]
     }
   ]
 }
