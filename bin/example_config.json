@@ -6,7 +6,7 @@
           "FileLogging": [
             {
               "FileLogging": "True",
-              "FileLogLocation": "",
+              "FileLogLocation": "./logging/logs.log",
               "FileLogLevel": "Debug"
             }
           ],
@@ -19,7 +19,7 @@
           ]
         }
       ],
-      "ParentProjectName": "",
+      "ParentProjectType": "folder",
       "ParentProjectId": "",
       "Authentication": "./bin/service-account-keys.json",
       "BillingAccountId": "",

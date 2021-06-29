@@ -1,10 +1,12 @@
 import os
+import time
+
 from gcpprojectautomation import helpers
 import googleapiclient.discovery
-from google.oauth2 import service_account
 import json
 import pprint
 import logging as log
+import googleapiclient.errors
 
 
 class GCPProject(object):
@@ -24,7 +26,7 @@ class GCPProject(object):
             log.critical(f"Project ID {project_id} not accepted. Program exiting")
             exit(1)
         self.project_name = str(project_name)
-        self.parent_project_name = ""
+        self.parent_project_type = ""
         self.parent_project_id = ""
         self.credentials = helpers.get_credentials()
         self.billing_account_id = ""
@@ -54,7 +56,7 @@ class GCPProject(object):
             config_info = json.load(f)
         # Set all the settings
         self.parent_project_id = config_info['Config'][0]['ParentProjectId']
-        self.parent_project_name = config_info['Config'][0]['ParentProjectName']
+        self.parent_project_type = config_info['Config'][0]['ParentProjectType']
         self.billing_account_id = config_info['Config'][0]['BillingAccountId']
         log.info(f"Meta info fields parent_project_id, parent_project_name, billing_account_id set for "
                  f"{self.project_id}")
@@ -70,12 +72,14 @@ class GCPProject(object):
                 # print(f"Project {self.project_id} exists on GCP and the service account has access")
                 return project
             else:
-                log.info(f"Project Id {self.project_id} does not exist on google cloud")
+                log.debug(f"Project Id {self.project_id} does not exist on google cloud")
         except googleapiclient.errors.HttpError as e:
-            log.info(f"Project Id {self.project_id} not found in project_object.find_project() function"
+            if e.status_code == 403:
+                log.debug(f"Project Id {self.project_id} not found in project_object.find_project() function"
                      f". If this was expected behaviour continue")
             return False
         except Exception as e:
+            log.error(f"find_project in project_object class returned an error: {e}")
             return e
 
     def does_project_exist(self):
@@ -88,55 +92,68 @@ class GCPProject(object):
         # Branch based upon logic
         if project_exists is False:
             log.info(f"Project Id {self.project_id} returned not found")
+            self.project_exists = False
             return False
         else:
+            self.project_exists = True
             return True
 
-    def create_new_project(self, parent_type="", parent_id=""):
+    def create_new_project(self):
         """
-        Creates a new project with the parent defined by the user. Enables a more efficient scope for service
-        accounts
+        Creates a new project with the parent defined by the user. Specification of the parent accounts is required
+        per GCP documentation:
         :parent_type: defines the type of parent. If left blank, is set to the default values project name
         :parent_id: defines the id of the parent. If left blank, is set to the default values provided
         :return: new project
         """
-        # If parent_type and parent_id are set to "", update with current ID and Type
-        if parent_type == "":
-            parent_type = self.parent_type
-        if parent_id == "":
-            parent_id = self.parent_id
-
         # If project does not exist, create a new one
         if not self.project_exists:
+            # Create the request
+            body = {
+                "projectId": self.project_id,
+                "name": self.project_name,
+                "parent": {
+                    "type": self.parent_project_type,
+                    "id": self.parent_project_id
+                }
+            }
+            log.debug(f"Body of project creation API request: {body} ")
             try:
-                self.cloud_service.projects().create(
-                    body={
-                        'projectId': self.project_id,
-                        'name': self.project_name,
-                        'parent': {'type': parent_type, 'id': parent_id}
-                    }
-                ).execute()
-                # todo: figure out how to handle errors if the project_id already exists
+                #
+                request = self.cloud_service.projects().create(
+                    body=body
+                )
+                response = request.execute()
+                log.debug(f"Response to project creation: {response}")
+                log.info(f"Project create API call POST with the following details:"
+                         f"Project ID: {self.project_id}, Project Name: {self.project_name}, "
+                         f"Parent Type: {self.parent_project_type}, Parent ID: {self.parent_project_id}")
             except Exception as e:
-                print(e)
+                log.error(e)
                 return False
 
             # If no errors are thrown, start checking for new project to become available.
-            # todo: update this loop
+            project_exists = False
+            while project_exists is False:
+                # Wait for 2 seconds
+                time.sleep(2)
+                # Check if project exists
+                project_exists = self.does_project_exist()
 
             # Confirm that the project now exists
             project_created = self.does_project_exist()
             if project_created:
                 # Update self.project_exists
+                log.info(f"Project Id {self.project_id} created")
+                # Update the class attribute
                 self.project_exists = True
-                # Update the services available
-                self.services_enabled = self.get_enabled_services()
                 return True
             else:
-                print(f"Project ID {self.project_id} was not created")
+                log.warning(f"Project ID {self.project_id} was not created")
                 return False
         else:
-            print(f"Project ID {self.project_id} already exists. Setting created to True")
+            log.warning(f"Project ID {self.project_id} already exists. Setting created to True")
+            self.project_exists = True
             return True
 
     def get_enabled_services(self):
@@ -213,23 +230,25 @@ class GCPProject(object):
         # Execute the query
         try:
             response = request.execute()
+            log.debug(f"API {api_or_service} enabled. Response: {response}")
+            # Update self.services available
+            self.services_enabled = self.get_enabled_services()
         except Exception as e:
-            print(e)
-            exit(1)
-        # Update self.services available
-        self.services_enabled = self.get_enabled_services()
+            log.error(e)
 
     def enable_project_billing(self):
         """
         Sets up a new project if selected
-        :return:
+        :return: True
         """
         #todo: test if Billing API is enabled, if not, enable
 
         # Construct the billing body for api
         # Reference:
         # https://stackoverflow.com/questions/53841940/cant-enable-billing-for-a-fresh-google-cloud-platform-project-in-python-api
-        billing_id = helpers.get_billing_info()
+        log.info(f"Setting up Billing Account Id API Call in project_object.enable_project_billing(). "
+                 f"Check config for Billing Account Id")
+        billing_id = self.billing_account_id
         project = f"projects/{self.project_id}"
         billing_body = {
             "name": f"projects/{self.project_id}/billingInfo",
@@ -238,15 +257,18 @@ class GCPProject(object):
             "billingAccountName": f"billingAccounts/{billing_id}"
         }
 
+        log.info(f"Setting up billing authentication")
         # Set up the API call
         billing_api = googleapiclient.discovery.build("cloudbilling", "v1", credentials=self.credentials)
         billing_enable = billing_api.projects().updateBillingInfo(name=project, body=billing_body)
         # Execute billing
         try:
             billing_execute = billing_enable.execute()
-            print(billing_execute)
+            log.info(f"Billing enabled. Details {billing_execute}")
+            return True
         except Exception as e:
-            print(e)
+            log.error(e)
+            return False
 
     def get_project_billing_info(self):
         """

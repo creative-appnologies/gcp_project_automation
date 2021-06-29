@@ -15,6 +15,7 @@ class Manifest(object):
         self.set_manifest_settings()
         self.manifest_name = manifest_name
         self.manifest = self.get_manifest()
+        self.apis_required = self.get_apis_required()
 
     def set_manifest_settings(self):
         """
@@ -47,14 +48,14 @@ class Manifest(object):
             with open(manifest_location) as f:
                 manifest = json.load(f)
                 log.info(f"Manifest exists at {manifest_location} and loaded")
+                return manifest
         else:
             # If file does not exists, log info and set manifest to DoesNotExist
             log.info(f"Manifest does not exists at {manifest_location}. Check the manifest name of {self.manifest_name} or"
                      f"get remotely")
             manifest = "DoesNotExistLocally"
+            return manifest
 
-        # Return output of manifest
-        return manifest
 
     def get_remote_manifest(self):
         """
@@ -75,13 +76,14 @@ class Manifest(object):
         :param manifest_name:
         :return:
         """
-        manifest = ""
         if self.auto_query_remote_manifest == "LocalOnly":
             # Query locally, if not found, return not found
             manifest = self.get_local_manifest()
+            return manifest
         elif self.auto_query_remote_manifest == "RemoteOnly":
             # Query remotely, if not found, return not found
             manifest = self.get_remote_manifest()
+            return manifest
         elif self.auto_query_remote_manifest == "LocalFirst":
             # Query local manifest
             local_manifest = self.get_local_manifest()
@@ -92,14 +94,18 @@ class Manifest(object):
                 if remote_manifest == "DoesNotExistRemotely":
                     manifest = "DoesNotExist"
                     log.warning(f"Manifest {self.manifest_name} does not exist locally or remotely. Check name.")
+                    return manifest
                 else:
                     log.info(f"Manifest {self.manifest_name} found remotely. One API call made")
                     # Store manifest locally
                     local_store = self.store_manifest_locally(remote_manifest)
                     log.info(f"Manifest for {self.manifest_name} outcome is {local_store}")
                     manifest = remote_manifest
+                    return manifest
             else:
                 log.info(f"Manifest {self.manifest_name} found locally. No API calls made")
+                manifest = local_manifest
+                return manifest
         elif self.auto_query_remote_manifest == "RemoteFirst":
             # Query remote manifest
             remote_manifest = self.get_remote_manifest()
@@ -108,16 +114,16 @@ class Manifest(object):
                 local_manifest = self.get_local_manifest()
                 if local_manifest == "DoesNotExistLocally":
                     manifest = "DoesNotExist"
+                    return manifest
                 else:
                     manifest = local_manifest
+                    return manifest
             else:
                 # Store manifest locally
                 local_store = self.store_manifest_locally(remote_manifest)
                 log.info(f"Manifest for {self.manifest_name} outcome is {local_store}")
                 manifest = remote_manifest
-
-        # Return manifest
-        return manifest
+                return manifest
 
     def store_manifest_locally(self, manifest):
         """
@@ -144,3 +150,12 @@ class Manifest(object):
                 return True
             else:
                 raise AssertionError(f"Error creating {file_path}. Manifest not saved")
+
+    def get_apis_required(self):
+        """
+        Gets the list of API's required for the manifest
+        :return:
+        """
+        # Load the manifest details
+        api_manifest = self.manifest['ManifestDetails'][0]['APIList']
+        return api_manifest

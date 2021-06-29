@@ -10,6 +10,7 @@ log = logging.getLogger(__name__)
 formatter = logging.Formatter(fmt='%(asctime)s - gcpprojectautomation - '
                                   '%(levelname)s - %(process)d - %(name)s - %(message)s')
 
+
 def logging_setup():
     """
     Sets up logging. All settings are contained within the config file. Other functions can modify the config

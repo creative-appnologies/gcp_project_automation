@@ -99,3 +99,27 @@ def check_project_id(project_id):
             "project_id": project_id
         }
         return project_outcome
+
+
+def get_service_account_name():
+    """
+    Gets the Service Account name from the authentication file provided
+    :return: ServiceAccountName
+    """
+    # Get the credential
+    if os.path.exists(os.getenv("GCP_AUTOMATION_CONFIG")):
+        credential_location = os.getenv("GCP_AUTOMATION_CONFIG")
+        with open(credential_location) as f:
+            credential_location = json.load(f)
+        credential = credential_location['Config'][0]['Authentication']
+        log.info(f"Retrieved credentail location as {credential}")
+    else:
+        raise ValueError("Error in get_credentials function when calling 'GCP_AUTOMATION_CONFIG'")
+
+    # Get credential name. Structure of the file is specified here:
+    # https://binx.io/blog/2021/03/07/how-to-create-your-own-google-service-account-key-file/
+    with open(credential) as f:
+        service_name = json.load(f)
+
+    service_name = service_name['client_email']
+    return service_name

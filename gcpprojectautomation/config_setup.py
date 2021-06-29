@@ -120,10 +120,10 @@ def set_config_file():
             config['Config'][0]['LoggingSettings'][0]['FileLogging'][0]["FileLogLocation"] \
                 = input("File log location: ")
 
-        if 'ParentProjectName' not in config['Config'][0] or config['Config'][0]['ParentProjectName'] is None \
-                or config['Config'][0]['ParentProjectName'] == "":
-            user_input = input("Parent Project Name does not exist. Please input: ")
-            config['Config'][0]['ParentProjectName'] = user_input
+        if 'ParentProjectType' not in config['Config'][0] or config['Config'][0]['ParentProjectType'] is None \
+                or config['Config'][0]['ParentProjectType'] == "":
+            user_input = input("Parent Project Type does not exist. Please input: (project) or (folder)")
+            config['Config'][0]['ParentProjectType'] = user_input
 
         if 'ParentProjectId' not in config['Config'][0] or config['Config'][0]['ParentProjectId'] is None \
                 or config['Config'][0]['ParentProjectId'] == "":

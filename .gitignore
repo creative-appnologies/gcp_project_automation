@@ -1,3 +1,5 @@
 /tests/test_config.json
 *service-account-keys*
 *service_account_keys*
+/logging/logs.log
+*creativeappnologies-core-52fb3830d84e.json
